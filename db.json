@@ -1,0 +1,208 @@
+{
+  "posts": [
+    {
+      "id": 0,
+      "name": "Features with React",
+      "image": "images/react-welcome.png",
+      "featured": true,
+      "description": "Building a react app with a theme and focus on table top games.",
+      "date": "2021-05-24T16:20Z",
+      "text": ["One of the main features of this app/site is to showcase a typical structure of a website built using React, with the theme of this one being table top games. Some of the main features implemented here include:", "1. Bootstrap's responsive grid system - Bootstrap is utilized for the layout of the site's pages, and will responsively change depending on user viewport. Try shrinking the viewport on this page and see if the contents' layout will responsively change to accomodate the viewport size.", "2. React app structure - this site follows a typical react app structure, where components call and render various other components to be shown and subsequent user interaction will update the render of these components. Site data are dynamically stored in a parent component's state and passed down to child components to be used. A large portion of the data (e.g. state) is managed by a Redux store and updated using actions and reducers (more on Redux in a future post).", "3. Very few amounts of the text content are hard-coded in the components, the large majority of the texts shown exist as properties of objects stored in a centralized database location.", "images/postcode.png", "The image above shows how the content of this page is rendered dynamically.", "4. Finally, this site features some simple interactive versions of some table top games, located in the 'Games' section. These games are also built using React, showcasing React's power and flexability. I plan to add some more games in the future as I work on this. The source code for everything can be found in the following GitHub repository:", "https://github.com/andychchou/nutabletopreact"],
+      "author": "Andy Chou"
+    },
+    {
+      "id": 1,
+      "name": "To-Do List of Features",
+      "image": "images/checklist.png",
+      "featured": false,
+      "description": "A checklist/to-do list of features currently being implemented, or to add in the future.",
+      "date": "2021-07-25T16:20Z",
+      "text": ["So far, the only table top game that is fully implemented is the tic-tac-toe game. The Chess game is currently being developed and will soon be partly functional.", "As for future games that I plan to add, I plan to add Uno and Monopoly. I feel that these four games are very distinct from each other, both in terms of design and in complexity.", "So far this is what the current to-do list looks like, in order of priority: ", "1. Work on the Chess game (currently in progress).", "2. Create an Uno Game.", "3. Create a Monopoly game.", "4. Create a new page, most likely will be something like a 'Store' page to shop for table top games", "As I work on these items on this list, I will periodically make additional blog posts on the progress so far, and eventually I will make another updated to-do list blog post."],
+      "author": "Andy Chou"
+    },
+    {
+      "id": 2,
+      "name": "Chess App with React - Part 1",
+      "image": "images/chess-react.jpeg",
+      "featured": false,
+      "description": "Creating a basic chessboard in React with basic logic for piece movement.",
+      "date": "2021-09-26T16:20Z",
+      "text": ["The basic part of the Chess app has been completed, but there's still a lot to work on. The basic movement of the pieces have been completed, but piece movement options are still currently not working, like castling and en passant. Occasionally, there are also some piece movement situations that happen but are not supposed to be allowed, so I am looking into that to try and fix it.", "Also, there isn't any check condition system at all yet. Check is not indicated at all when it happens, and there's nothing stopping the player from moving into self-check either. This will be another large part of the game that I expect to spend quite some time on.", "So for now, this is what I have completed: ", "1. Board setup", "2. Alternating player turns", "3. Basic piece movement, excluding castling and en passant", "4. Captured pieces list", "Things currently in development: ", "1. Castling and en passant", "2. Check system", "3. Pawn promotion system", "4. Move history", "I expect the check system to be the most difficult to add in."],
+      "author": "Andy Chou"
+    }
+  ],
+  "comments": [
+    {
+      "id": 0,
+      "postId": 0,
+      "text": "First Comment!",
+      "author": "Andy Chou",
+      "date": "2021-05-25T16:30Z"
+    },
+    {
+      "id": 1,
+      "postId": 0,
+      "text": "You can leave a comment through the 'Contact' page as well.",
+      "author": "Andy Chou",
+      "date": "2021-06-17T03:33Z"
+    },
+    {
+      "id": 2,
+      "postId": 0,
+      "text": "Very nice.",
+      "author": "Will Gates",
+      "date": "2021-06-18T18:12Z"
+    },
+    {
+      "id": 3,
+      "postId": 0,
+      "text": "Maybe try changing the comment box to unhide from the page instead of being a modal?",
+      "author": "User",
+      "date": "2021-07-04T20:11Z"
+    },
+    {
+      "id": 4,
+      "postId": 0,
+      "text": "What's next?",
+      "author": "Andy Chou",
+      "date": "2021-07-23T19:44Z"
+    },
+    {
+      "id": 5,
+      "postId": 1,
+      "rating": 4,
+      "text": "Monopoly sounds like the most complex to create.",
+      "author": "Andy Chou",
+      "date": "2021-08-17T03:33Z"
+    },
+    {
+      "id": 6,
+      "postId": 1,
+      "rating": 5,
+      "text": "Any suggestions?",
+      "author": "Andy Chou",
+      "date": "2021-08-18T18:12Z"
+    },
+    {
+      "id": 7,
+      "postId": 1,
+      "rating": 5,
+      "text": "Checkers might be easier than Chess?",
+      "author": "User",
+      "date": "2021-09-04T20:11Z"
+    },
+    {
+      "id": 8,
+      "postId": 1,
+      "rating": 4,
+      "text": "Keep it up.",
+      "author": "User",
+      "date": "2021-09-23T19:44Z"
+    },
+    {
+      "id": 9,
+      "postId": 1,
+      "rating": 5,
+      "text": "Chess is more difficult to develop than I expected.",
+      "author": "Andy Chou",
+      "date": "2021-09-25T16:30Z"
+    },
+    {
+      "id": 10,
+      "postId": 2,
+      "rating": 5,
+      "text": "I might look into creating another chess app using chess.js and chessboard.js",
+      "author": "Andy Chou",
+      "date": "2021-10-18T18:12Z"
+    }
+  ],
+  "techs": [
+    {
+      "id": 0,
+      "name": "Bootstrap",
+      "image": "images/bootstrap-logo.png",
+      "featured": false,
+      "description": "Bootstrap's grid system is used for the design of the application's components and page layouts"
+    },
+    {
+      "id": 1,
+      "name": "React",
+      "image": "images/react-icon.svg",
+      "featured": true,
+      "description": "React is the main library used here. All the various components here are created and rendered using React."
+    },
+    {
+      "id": 2,
+      "name": "Redux",
+      "image": "images/redux-logo.png",
+      "featured": false,
+      "description": "Redux is implemented to centralize state management, and to ensure consistent flow of state and data."
+    },
+    {
+      "id": 3,
+      "name": "Node",
+      "image": "images/node-logo.png",
+      "featured": false,
+      "description": "Node is used for handling backend processing of some of this application's data."
+    }
+  ],
+  "promotions": [
+    {
+      "id": 0,
+      "name": "Source Code GitHub Repository",
+      "image": "images/git-logo.png",
+      "featured": true,
+      "description": "The source code for this application is located in this GitHub repository."
+    }
+  ],
+  "feedback": [
+    {
+      "id": 0,
+      "firstname": "Test",
+      "lastname": "Test",
+      "phoneNum": "12345",
+      "email": "test@test.com",
+      "agree": true,
+      "contactType": "Email",
+      "feedback": "test"
+    }
+  ],
+  "games": [
+    {
+      "id": 0,
+      "name": "Chess",
+      "image": "images/chess.jpg",
+      "featured": true,
+      "description": "The most popular board game of all time. Use strategy and tactics to capture your opponent's king while defending yours.",
+      "instruction": ["The player that captures the opposing player's king piece wins the game.", "Each player takes turns moving their pieces on the board."],
+      "link": "http://www.sakkpalota.hu/index.php/en/chess/rules"
+    },
+    {
+      "id": 1,
+      "name": "Tic Tac Toe",
+      "image": "images/ttt.png",
+      "featured": false,
+      "description": "One of the simplest and quickest table top games ever. Also known as noughts and crosses, or Xs and Os.",
+      "instruction": ["Win the game by making a line with three of your pieces.", "Each player takes turns placing their pieces onto a square on the board."],
+      "link": "https://en.wikipedia.org/wiki/Tic-tac-toe"
+    },
+    {
+      "id": 2,
+      "name": "Uno",
+      "image": "images/uno.png",
+      "featured": false,
+      "description": "Classic card game that can be played with 2-10 players. Easy to learn and easy to play.",
+      "instruction": ["A player wins the game by discarding all cards from their hand.", "Each player takes turns playing cards from their hands by discarding them into the discard pile.", "Played cards must match the number, color, or the symbol/Action of the previously discarded card.", "If a player does not or cannot play a card on their turn, that player must draw a card from the Draw pile.", "If the card drawn from the Draw pile can be played, the player may play that card, otherwise the game moves to the next player's turn.", "Whenever a player plays a card and then has one card remaining in hand, that player must declare 'Uno'; if caught not saying 'Uno' by another player, that player must draw two cards."],
+      "link": "https://www.ultraboardgames.com/uno/game-rules.php"
+    },
+    {
+      "id": 3,
+      "name": "Monopoly",
+      "image": "images/monopoly.png",
+      "featured": false,
+      "description": "The classic board game of economics-themed strategy. Each game can last 20 minutes, or 4 hours, it's all up to the players.",
+      "instruction": ["Win the game by becoming the wealthiest player in the game.", "Each player takes turns moving their tokens around the board by rolling the dice to determine the number of space the token moves.", "Depending on the space the player's token lands, the player may buy property, be obligated to pay money, or carry out some game action.", "Throughout the game, players may trade resourece with each other, build/sell house and hotels, or mortgage/unmortgage properties."],
+      "link": "https://www.hasbro.com/common/instruct/monins.pdf"
+    }
+  ]
+}
