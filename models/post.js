@@ -17,7 +17,7 @@ const postSchema = new Schema({
         required: true
     },
     text: {
-        type: String
+        type: Array
     },
     author: {
         type: String
@@ -33,6 +33,6 @@ const postSchema = new Schema({
     timestamps: true
 });
 
-const Post = mongoose.model('Game', postSchema);
+const Post = mongoose.model('Post', postSchema);
 
 module.exports = Post;

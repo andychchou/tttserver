@@ -17,7 +17,7 @@ const gameSchema = new Schema({
         required: true
     },
     instruction: {
-        type: String
+        type: Array
     },
     link: {
         type: String

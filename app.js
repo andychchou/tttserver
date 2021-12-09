@@ -56,7 +56,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // use routers with respective routes
 app.use('/games', gameRouter);
-app.use('/post', postRouter);
+app.use('/posts', postRouter);
 app.use('/comments', commentRouter);
 
 // catch 404 and forward to error handler
