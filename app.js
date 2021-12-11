@@ -11,6 +11,7 @@ var usersRouter = require('./routes/users');
 const gameRouter = require('./routes/gameRouter');
 const postRouter = require('./routes/postRouter');
 const commentRouter = require('./routes/commentRouter');
+const techRouter = require('./routes/techRouter');
 
 const mongoose = require('mongoose');
 
@@ -58,6 +59,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/games', gameRouter);
 app.use('/posts', postRouter);
 app.use('/comments', commentRouter);
+app.use('/techs', techRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
