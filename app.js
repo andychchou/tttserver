@@ -12,6 +12,7 @@ const gameRouter = require('./routes/gameRouter');
 const postRouter = require('./routes/postRouter');
 const commentRouter = require('./routes/commentRouter');
 const technoRouter = require('./routes/technoRouter');
+const promotionRouter = require('./routes/promotionRouter');
 
 const mongoose = require('mongoose');
 
@@ -60,6 +61,7 @@ app.use('/games', gameRouter);
 app.use('/posts', postRouter);
 app.use('/comments', commentRouter);
 app.use('/technos', technoRouter);
+app.use('/promotions', promotionRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
