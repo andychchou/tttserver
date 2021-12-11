@@ -1,37 +1,37 @@
 const express = require('express');
-const Tech = require('../models/tech');
+const Techno = require('../models/techno');
 const authenticate = require('../authenticate');
 const cors = require('./cors');
 
-const techRouter = express.Router();
+const technoRouter = express.Router();
 
-techRouter.route('/')
+technoRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
 .get(cors.cors, (req, res, next) => {
-    Tech.find()
-    .then(techs => {
+    Techno.find()
+    .then(technos => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.json(techs);
+        res.json(technos);
     })
     .catch(err => next(err));
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
-    Tech.create(req.body)
-    .then(tech => {
-        console.log('Tech Created ', tech);
+    Techno.create(req.body)
+    .then(techno => {
+        console.log('Techno Created ', techno);
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.json(tech);
+        res.json(techno);
     })
     .catch(err => next(err));
 })
 .put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
-    res.end('PUT operation not supported on /techs');
+    res.end('PUT operation not supported on /technos');
 })
 .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
-    Tech.deleteMany()
+    Techno.deleteMany()
     .then(response => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -40,34 +40,34 @@ techRouter.route('/')
     .catch(err => next(err));
 });
 
-techRouter.route('/:techId')
+technoRouter.route('/:technoId')
 .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
 .get(cors.cors, (req, res, next) => {
-    Tech.findById(req.params.techId)
-    .then(tech => {
+    Techno.findById(req.params.technoId)
+    .then(techno => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.json(tech);
+        res.json(techno);
     })
     .catch(err => next(err));
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
-    res.end(`POST operation not supported on /techs/${req.params.techId}`);
+    res.end(`POST operation not supported on /technos/${req.params.technoId}`);
 })
 .put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
-    Tech.findByIdAndUpdate(req.params.techId, {
+    Techno.findByIdAndUpdate(req.params.technoId, {
         $set: req.body
     }, { new: true })
-    .then(tech => {
+    .then(techno => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.json(tech);
+        res.json(techno);
     })
     .catch(err => next(err));
 })
 .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
-    Tech.findByIdAndDelete(req.params.techId)
+    Techno.findByIdAndDelete(req.params.technoId)
     .then(response => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -76,4 +76,4 @@ techRouter.route('/:techId')
     .catch(err => next(err));
 });
 
-module.exports = techRouter;
+module.exports = technoRouter;

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 
-const techSchema = new Schema({
+const technoSchema = new Schema({
     name: {
         type: String,
         required: true,
@@ -24,6 +24,6 @@ const techSchema = new Schema({
     timestamps: true
 });
 
-const Tech = mongoose.model('Tech', techSchema);
+const Techno = mongoose.model('Techno', technoSchema);
 
-module.exports = Tech;
+module.exports = Techno;
