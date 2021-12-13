@@ -13,6 +13,7 @@ const postRouter = require('./routes/postRouter');
 const commentRouter = require('./routes/commentRouter');
 const technoRouter = require('./routes/technoRouter');
 const promotionRouter = require('./routes/promotionRouter');
+const feedbackRouter = require('./routes/feedbackRouter');
 
 const mongoose = require('mongoose');
 
@@ -62,6 +63,7 @@ app.use('/posts', postRouter);
 app.use('/comments', commentRouter);
 app.use('/technos', technoRouter);
 app.use('/promotions', promotionRouter);
+app.use('/feedbacks', feedbackRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
