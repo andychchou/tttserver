@@ -3,8 +3,11 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var http = require('http');
 const passport = require('passport');
 const config = require('./config');
+const socketio = require('socket.io');
+const socketServer = require('./socketServer');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -81,4 +84,22 @@ app.use(function(err, req, res, next) {
     res.render('error');
 });
 
-module.exports = app;
+// to use for regular server
+var server = http.createServer(app);
+const port = process.env.PORT || 3000;
+
+// Socket Setup
+const io = socketio(server);
+io.on('connection', socket => {
+  //console.log('New WS Connection...');
+  socketServer(io, socket)
+});
+
+
+// for console.log
+server.listen(port, () => console.log(`Server running on port ${port}`));
+
+// to use for deployment
+// server.listen(port,{origins: '*:*'});
+
+// module.exports = app;

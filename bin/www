@@ -10,6 +10,7 @@ var http = require('http');
 
 const https = require('https');
 const fs = require('fs');
+const socketio = require('socket.io');
 
 /**
  * Get port from environment and store in Express.
@@ -24,6 +25,7 @@ app.set('secPort', port+443);
  */
 
 var server = http.createServer(app);
+const io = socketio(server)
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -53,6 +55,14 @@ secureServer.listen(app.get('secPort'), () => {
 });
 secureServer.on('error', onError);
 secureServer.on('listening', onListening);
+
+// socket.io
+
+const ioSecure = socketio(secureServer);
+
+ioSecure.on('connection', socket => {
+  console.log('New Secure WS Connection...');
+});
 
 /**
  * Normalize a port into a number, string, or false.
