@@ -35,14 +35,14 @@ connect.then(() => console.log('Connected to server'),
 var app = express();
 
 // Secure traffic only
-app.all('*', (req, res, next) => {
-    if (req.secure) {
-        return next();
-    } else {
-        console.log(`Redirecting to: https://${req.hostname}:${app.get('secPort')}${req.url}`);
-        res.redirect(301, `https://${req.hostname}:${app.get('secPort')}${req.url}`);
-    }
-});
+// app.all('*', (req, res, next) => {
+//     if (req.secure) {
+//         return next();
+//     } else {
+//         console.log(`Redirecting to: https://${req.hostname}:${app.get('secPort')}${req.url}`);
+//         res.redirect(301, `https://${req.hostname}:${app.get('secPort')}${req.url}`);
+//     }
+// });
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -76,8 +76,8 @@ app.use(function(req, res, next) {
 // error handler
 app.use(function(err, req, res, next) {
     // set locals, only providing error in development
-    res.locals.message = err.message;
-    res.locals.error = req.app.get('env') === 'development' ? err : {};
+    // res.locals.message = err.message;
+    // res.locals.error = req.app.get('env') === 'development' ? err : {};
 
     // render the error page
     res.status(err.status || 500);
