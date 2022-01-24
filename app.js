@@ -90,6 +90,7 @@ const port = process.env.PORT || 3000;
 
 // Socket Setup
 const io = socketio(server);
+// Runs when client connects
 io.on('connection', socket => {
   //console.log('New WS Connection...');
   socketServer(io, socket)
