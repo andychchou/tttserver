@@ -3,6 +3,15 @@ const { userJoin, getCurrentUser, userLeave, getRoomUsers } = require('./socketU
 module.exports = (io, socket) => {
     console.log('socketServer connected');
 
+    socket.on('tryJoinRoom', ({ user, room }) => {
+        const userList = getRoomUsers(room).map(userObj => userObj.user);
+        if (userList.includes(user)) {
+            socket.emit('userExists', userList);
+        } else {
+            socket.emit('joinRoomOK', {user});
+        }
+    })
+
     socket.on('joinRoom', ({ user, room }) => {
         const userObj = userJoin(socket.id, user, room);
         socket.join(userObj.room);
@@ -25,7 +34,6 @@ module.exports = (io, socket) => {
         socket.broadcast.to(userObj.room).emit('receive-message', {text, sender});
         // global broadcast
         // io.emit('message', text);
-        console.log(getRoomUsers(userObj.room));
     });
 
     // Runs when client disconnects
