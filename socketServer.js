@@ -1,4 +1,5 @@
 const { userJoin, getCurrentUser, userLeave, getRoomUsers } = require('./socketUsersUtil');
+const { roomJoinUno } = require('./unoUtil')
 
 module.exports = (io, socket) => {
     console.log('socketServer connected');
@@ -12,7 +13,7 @@ module.exports = (io, socket) => {
         }
     })
 
-    socket.on('joinRoom', ({ user, room }) => {
+    socket.on('joinRoom', ({ user, room, game }) => {
         const userObj = userJoin(socket.id, user, room);
         socket.join(userObj.room);
         
@@ -27,6 +28,12 @@ module.exports = (io, socket) => {
             room: userObj.room,
             users: getRoomUsers(userObj.room)
         });
+
+        // Join Uno game
+        if (game === 'uno') {
+            console.log(userObj.room);
+            roomJoinUno(userObj.room);
+        }
     });
 
     socket.on('send-message', ({text, sender}) => {
