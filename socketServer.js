@@ -31,8 +31,11 @@ module.exports = (io, socket) => {
 
         // Join Uno game
         if (game === 'uno') {
-            console.log(userObj.room);
-            roomJoinUno(userObj.room);
+            roomJoinUno(userObj);
+
+            // work on code here
+
+            // emit 'joinUno' here
         }
     });
 

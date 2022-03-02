@@ -1,3 +1,4 @@
+// array of objects that contain roomCode, deck array, maxPlayers, player objects, discard pile, turn, play direction.
 const unoRooms = [];
 
 const deckInit = [
@@ -8,13 +9,28 @@ const deckInit = [
     'W', 'W', 'W', 'W', 'D4W', 'D4W', 'D4W', 'D4W'
 ];
 
-function roomJoinUno(roomCode) {
+function roomJoinUno(userObj) {
     // Uno room game creation.
-    if (!unoRooms.filter(room => room.roomCode === roomCode)[0]) {
+    if (!unoRooms.filter(room => room.roomCode === userObj.room)[0]) {
         // code WIP
-        const roomToAdd = { roomCode: roomCode, deck: deckInit }
+        const roomToAdd = { 
+            roomCode: userObj.room, 
+            deck: deckInit, 
+            maxPlayers: 0, 
+            players: [userObj], 
+            host: userObj, 
+            discardPile: [], 
+            turn: 0, 
+            playDirection: 0 
+        }
         unoRooms.push(roomToAdd);
-        console.log(unoRooms);
+        console.log(roomToAdd);
+    } else {
+        // join existing room
+        const roomToJoin = unoRooms.filter(room => room.roomCode === userObj.room[0]);
+        
+        roomToJoin.players = [...roomToJoin.players, userObj];
+        
     }
 }
 
