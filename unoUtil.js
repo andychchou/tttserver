@@ -1,3 +1,5 @@
+const { userJoin, getCurrentUser, userLeave, getRoomUsers } = require('./socketUsersUtil');
+
 // array of objects that contain roomCode, deck array, maxPlayers, player objects, discard pile, turn, play direction.
 const unoRooms = [];
 
@@ -13,25 +15,33 @@ function roomJoinUno(userObj) {
     // Uno room game creation.
     if (!unoRooms.filter(room => room.roomCode === userObj.room)[0]) {
         // code WIP
-        const roomToAdd = { 
-            roomCode: userObj.room, 
-            deck: deckInit, 
-            maxPlayers: 0, 
-            players: [userObj], 
-            host: userObj, 
-            discardPile: [], 
-            turn: 0, 
-            playDirection: 0 
+        const roomToAdd = {
+            roomCode: userObj.room,
+            deck: deckInit,
+            maxPlayers: 0,
+            players: [userObj],
+            host: userObj,
+            discardPile: [],
+            turn: 0,
+            playDirection: 0
         }
         unoRooms.push(roomToAdd);
         console.log(roomToAdd);
+        console.log(unoRooms);
     } else {
         // join existing room
-        const roomToJoin = unoRooms.filter(room => room.roomCode === userObj.room[0]);
-        
+        const roomToJoin = unoRooms.filter(room => room.roomCode === userObj.room)[0];
+        console.log(roomToJoin)
         roomToJoin.players = [...roomToJoin.players, userObj];
-        
+
     }
+}
+
+function roomLeaveUno(userObj) {
+    const roomToLeave = unoRooms.filter(room => room.roomCode === userObj.room)[0];
+    const usersNow = getRoomUsers(userObj.room);
+    roomToLeave.players = [...usersNow];
+
 }
 
 function shuffleArray(array) {
@@ -44,5 +54,6 @@ function shuffleArray(array) {
 
 module.exports = {
     roomJoinUno,
-    shuffleArray
+    shuffleArray,
+    roomLeaveUno
 }
