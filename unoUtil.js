@@ -26,14 +26,10 @@ function roomJoinUno(userObj) {
             playDirection: 0
         }
         unoRooms.push(roomToAdd);
-        console.log(roomToAdd);
-        console.log(unoRooms);
     } else {
         // join existing room
         const roomToJoin = unoRooms.filter(room => room.roomCode === userObj.room)[0];
-        console.log(roomToJoin)
         roomToJoin.players = [...roomToJoin.players, userObj];
-
     }
 }
 
@@ -41,7 +37,11 @@ function roomLeaveUno(userObj) {
     const roomToLeave = unoRooms.filter(room => room.roomCode === userObj.room)[0];
     const usersNow = getRoomUsers(userObj.room);
     roomToLeave.players = [...usersNow];
-
+    // check if empty room
+    if (roomToLeave.players.length === 0) {
+        const roomToLeaveIndex = unoRooms.indexOf(roomToLeave);
+        unoRooms.splice(roomToLeaveIndex, 1);
+    }
 }
 
 function shuffleArray(array) {
