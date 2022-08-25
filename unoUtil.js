@@ -44,6 +44,16 @@ function roomLeaveUno(userObj) {
     }
 }
 
+function getGameState(roomId) {
+    const roomIndex = unoRooms.findIndex(room => room.roomCode === roomId);
+    return unoRooms.slice(roomIndex, roomIndex + 1);
+}
+
+function setGameState(roomId, key, value) {
+    const targetRoom = unoRooms.find(room => room.roomCode === roomId);
+    targetRoom[key] = value;
+}
+
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1))
@@ -52,8 +62,11 @@ function shuffleArray(array) {
     return array;
 }
 
+
 module.exports = {
     roomJoinUno,
     shuffleArray,
-    roomLeaveUno
+    roomLeaveUno,
+    getGameState,
+    setGameState,
 }

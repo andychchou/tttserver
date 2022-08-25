@@ -1,5 +1,5 @@
 const { userJoin, getCurrentUser, userLeave, getRoomUsers } = require('./socketUsersUtil');
-const { roomJoinUno, roomLeaveUno } = require('./unoUtil')
+const { roomJoinUno, roomLeaveUno, getGameState, setGameState } = require('./unoUtil')
 
 module.exports = (io, socket) => {
     console.log('socketServer connected');
@@ -60,7 +60,10 @@ module.exports = (io, socket) => {
 
             // Leaving room function
             roomLeaveUno(userObj);
-
         }
     });
+
+    socket.on('gameSetup', ({ room, maxPlayers }) => {
+        setGameState(room, 'maxPlayers', maxPlayers);
+    })
 };
