@@ -1,6 +1,7 @@
+const { set } = require('mongoose');
 const { userJoin, getCurrentUser, userLeave, getRoomUsers } = require('./socketUsersUtil');
 
-// array of objects that contain roomCode, deck array, maxPlayers, player objects, discard pile, turn, play direction.
+// array of objects that contain roomCode, gameStarted, deck array, maxPlayers, player objects, player hands, discard pile, turn, play direction.
 const unoRooms = [];
 
 const deckInit = [
@@ -14,50 +15,120 @@ const deckInit = [
 function roomJoinUno(userObj) {
     // Uno room game creation.
     if (!unoRooms.filter(room => room.roomCode === userObj.room)[0]) {
-        // code WIP
         const roomToAdd = {
             roomCode: userObj.room,
+            gameStarted: false,
             deck: deckInit,
             maxPlayers: 0,
-            players: [userObj],
+            players: [userObj.user],
+            playerHands: [[], []],
             host: userObj,
-            discardPile: [],
+            discardPile: '',
             turn: 0,
-            playDirection: 0
+            playDirection: true
         }
         unoRooms.push(roomToAdd);
     } else {
-        // join existing room
-        const roomToJoin = unoRooms.filter(room => room.roomCode === userObj.room)[0];
-        roomToJoin.players = [...roomToJoin.players, userObj];
+        // automatically join game if room exists
+        // const roomToJoin = unoRooms.filter(room => room.roomCode === userObj.room)[0];
+        // roomToJoin.players = [...roomToJoin.players, userObj];
     }
 }
 
 function roomLeaveUno(userObj) {
+    console.log("user: " + userObj.user)
     const roomToLeave = unoRooms.filter(room => room.roomCode === userObj.room)[0];
-    const usersNow = getRoomUsers(userObj.room);
-    roomToLeave.players = [...usersNow];
-    // check if empty room
-    if (roomToLeave.players.length === 0) {
-        const roomToLeaveIndex = unoRooms.indexOf(roomToLeave);
+    // if room still exists
+    if (roomToLeave) {
+        const playerIndex = roomToLeave.players.indexOf(userObj.user);
+        console.log("playerIndex" + playerIndex)
+        if (playerIndex !== -1) {
+            roomToLeave.players.splice(playerIndex, 1);
+        }
+        console.log("result players: " + roomToLeave.players);
+    }
+}
+
+function checkEmptyRoom(room) {
+    const roomUsersCount = getRoomUsers(room).length
+    if (roomUsersCount === 0) {
+        const roomToLeaveIndex = unoRooms.indexOf(room);
         unoRooms.splice(roomToLeaveIndex, 1);
     }
 }
 
-function getGameState(roomId) {
-    const roomIndex = unoRooms.findIndex(room => room.roomCode === roomId);
-    return unoRooms.slice(roomIndex, roomIndex + 1);
+function setGameState(roomId, command, value) {
+    const targetRoom = unoRooms.find(room => room.roomCode === roomId);
+
+    if (command === 'startGame') {
+        targetRoom.gameStarted = true;
+        const gamePlayersCount = targetRoom.players.length;
+        for (let i = 0; i < 7; i++) {
+            for (let j = 0; j < gamePlayersCount; j++) {
+                setGameState(targetRoom.roomCode, 'drawCard', targetRoom.players[j])
+            }
+        }
+        const cardToDiscard = targetRoom.deck.pop();
+        targetRoom.discardPile = cardToDiscard;
+    }
+
+    if (command === 'drawCard') {
+        const userIndex = targetRoom.players.indexOf(value);
+        const drawnCard = targetRoom.deck.pop();
+        targetRoom.playerHands[userIndex].push(drawnCard);
+    }
+
+    if (command === 'maxPlayers') {
+        targetRoom.maxPlayers = value;
+    }
+
+    if (command === 'addPlayer') {
+        if (targetRoom.players.includes(null)) {
+            const nullIndex = targetRoom.players.indexOf(null);
+            targetRoom.players.splice(nullIndex, 1, value)
+        }
+        targetRoom.players = [...targetRoom.players, value];
+    }
+
+    if (command === 'deckRefresh') {
+        targetRoom.deck = shuffleArray(deckInit.map(card => card));
+        targetRoom.discardPile = '';
+    }
+
 }
 
-function setGameState(roomId, key, value) {
-    const targetRoom = unoRooms.find(room => room.roomCode === roomId);
-    targetRoom[key] = value;
+function getGameState(roomId) {
+    const roomIndex = unoRooms.findIndex(room => room.roomCode === roomId);
+    const unoRoom = unoRooms.slice(roomIndex, roomIndex + 1)[0];
+    // snapshot of room that excluded hidden info
+    const gameUpdateObj = {
+        gameStarted: unoRoom.gameStarted,
+        maxPlayers: unoRoom.maxPlayers,
+        players: unoRoom.players,
+        playerHandsCounts: unoRoom.playerHands.map((playerHand) => playerHand.length),
+        host: unoRoom.host,
+        discardPile: unoRoom.discardPile,
+        turn: unoRoom.turn,
+        playDirection: unoRoom.playDirection
+    }
+    return gameUpdateObj;
+}
+
+function getPlayerHand(roomId, player) {
+    const roomIndex = unoRooms.findIndex(room => room.roomCode === roomId);
+    const unoRoom = unoRooms.slice(roomIndex, roomIndex + 1)[0];
+    const playerIndex = unoRoom.players.indexOf(player)
+    const hand = unoRoom.playerHands[playerIndex]
+    return hand;
 }
 
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1))
-        [array[i], array[j]] = [array[j], array[i]]
+        const temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+        // [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
 }
@@ -67,6 +138,8 @@ module.exports = {
     roomJoinUno,
     shuffleArray,
     roomLeaveUno,
+    checkEmptyRoom,
     getGameState,
     setGameState,
+    getPlayerHand
 }

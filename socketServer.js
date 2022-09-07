@@ -1,5 +1,5 @@
 const { userJoin, getCurrentUser, userLeave, getRoomUsers } = require('./socketUsersUtil');
-const { roomJoinUno, roomLeaveUno, getGameState, setGameState } = require('./unoUtil')
+const { roomJoinUno, roomLeaveUno, checkEmptyRoom, getGameState, setGameState, getPlayerHand } = require('./unoUtil')
 
 module.exports = (io, socket) => {
     console.log('socketServer connected');
@@ -32,7 +32,8 @@ module.exports = (io, socket) => {
         // Join Uno game
         if (game === 'uno') {
             roomJoinUno(userObj);
-
+            const roomHostUser = getGameState(userObj.room).host.user;
+            io.to(userObj.room).emit('updateHost', { roomHostUser });
             // work on code here
 
             // emit 'joinUno' here
@@ -48,22 +49,69 @@ module.exports = (io, socket) => {
 
     // Runs when client disconnects
     socket.on('disconnect', () => {
-        const userObj = userLeave(socket.id);
+        const userObj = getCurrentUser(socket.id);
         if (userObj) {
-            io.to(userObj.room).emit('message', `${userObj.user} has left the room`);
-
-            // Send users and room info
-            io.to(userObj.room).emit('roomUsers', {
-                room: userObj.room,
-                users: getRoomUsers(userObj.room)
-            });
-
             // Leaving room function
             roomLeaveUno(userObj);
+            const gameState = getGameState(userObj.room);
+            io.to(userObj.room).emit('updateGameState', { gameState });
+        }
+
+        const userLeaveObj = userLeave(socket.id);
+        if (userLeaveObj) {
+            io.to(userLeaveObj.room).emit('message', `${userLeaveObj.user} has left the room`);
+
+            // Send users and room info
+            io.to(userLeaveObj.room).emit('roomUsers', {
+                room: userLeaveObj.room,
+                users: getRoomUsers(userLeaveObj.room)
+            });
+
+            checkEmptyRoom(userLeaveObj.room);
         }
     });
 
     socket.on('gameSetup', ({ room, maxPlayers }) => {
         setGameState(room, 'maxPlayers', maxPlayers);
+    })
+
+    socket.on('joinGame', ({ user, room }) => {
+        const userObj = getCurrentUser(socket.id)
+        setGameState(room, 'addPlayer', user);
+        const gameState = getGameState(room);
+        console.log(user + " joined room, emitting gameState to room")
+        console.log(gameState)
+        io.to(userObj.room).emit('updateGameState', { gameState });
+    })
+
+    socket.on('requestGameState', ({ room }) => {
+        console.log("emitting gameState to room")
+        const userObj = getCurrentUser(socket.id)
+        const gameState = getGameState(room);
+        // send gameState emit
+        io.to(userObj.room).emit('updateGameState', { gameState });
+    });
+
+    socket.on('startGame', ({ room }) => {
+        console.log("game started");
+        const userObj = getCurrentUser(socket.id)
+        const gamePlayersCount = getGameState(room).players.length;
+        if (gamePlayersCount > 1) {
+            setGameState(room, 'deckRefresh');
+            setGameState(room, 'startGame');
+            const gameState = getGameState(room);
+            io.to(userObj.room).emit('updateGameState', { gameState });
+        } else {
+            // emit: need players to join message here
+        }
+    })
+
+    socket.on('requestHandState', () => {
+        const userObj = getCurrentUser(socket.id)
+        const gameState = getGameState(userObj.room)
+        if (gameState.players.includes(userObj.user) && gameState.gameStarted === true) {
+            const hand = getPlayerHand(userObj.room, userObj.user)
+            socket.emit('updateHandState', { hand })
+        }
     })
 };
