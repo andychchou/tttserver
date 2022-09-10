@@ -1,5 +1,6 @@
+const { set } = require('mongoose');
 const { userJoin, getCurrentUser, userLeave, getRoomUsers } = require('./socketUsersUtil');
-const { roomJoinUno, roomLeaveUno, checkEmptyRoom, getGameState, setGameState, getPlayerHand } = require('./unoUtil')
+const { roomJoinUno, roomLeaveUno, checkEmptyRoom, getGameState, setGameState, getPlayerHand, startGame, drawCard, setMaxPlayers, addPlayer, deckRefresh } = require('./unoUtil')
 
 module.exports = (io, socket) => {
     console.log('socketServer connected');
@@ -72,12 +73,12 @@ module.exports = (io, socket) => {
     });
 
     socket.on('gameSetup', ({ room, maxPlayers }) => {
-        setGameState(room, 'maxPlayers', maxPlayers);
+        setGameState(room, setMaxPlayers, maxPlayers)
     })
 
     socket.on('joinGame', ({ user, room }) => {
         const userObj = getCurrentUser(socket.id)
-        setGameState(room, 'addPlayer', user);
+        setGameState(room, addPlayer, user)
         const gameState = getGameState(room);
         console.log(user + " joined room, emitting gameState to room")
         console.log(gameState)
@@ -97,8 +98,8 @@ module.exports = (io, socket) => {
         const userObj = getCurrentUser(socket.id)
         const gamePlayersCount = getGameState(room).players.length;
         if (gamePlayersCount > 1) {
-            setGameState(room, 'deckRefresh');
-            setGameState(room, 'startGame');
+            setGameState(room, deckRefresh);
+            setGameState(room, startGame);
             const gameState = getGameState(room);
             io.to(userObj.room).emit('updateGameState', { gameState });
         } else {

@@ -53,54 +53,16 @@ function checkEmptyRoom(room) {
     const roomUsersCount = getRoomUsers(room).length
     if (roomUsersCount === 0) {
         const roomToLeaveIndex = unoRooms.indexOf(room);
-        unoRooms.splice(roomToLeaveIndex, 1);
-    }
-}
-
-function setGameState(roomId, command, value) {
-    const targetRoom = unoRooms.find(room => room.roomCode === roomId);
-
-    if (command === 'startGame') {
-        targetRoom.gameStarted = true;
-        const gamePlayersCount = targetRoom.players.length;
-        for (let i = 0; i < 7; i++) {
-            for (let j = 0; j < gamePlayersCount; j++) {
-                setGameState(targetRoom.roomCode, 'drawCard', targetRoom.players[j])
-            }
+        if (roomToLeaveIndex !== -1) {
+            unoRooms.splice(roomToLeaveIndex, 1);
         }
-        const cardToDiscard = targetRoom.deck.pop();
-        targetRoom.discardPile = cardToDiscard;
     }
-
-    if (command === 'drawCard') {
-        const userIndex = targetRoom.players.indexOf(value);
-        const drawnCard = targetRoom.deck.pop();
-        targetRoom.playerHands[userIndex].push(drawnCard);
-    }
-
-    if (command === 'maxPlayers') {
-        targetRoom.maxPlayers = value;
-    }
-
-    if (command === 'addPlayer') {
-        if (targetRoom.players.includes(null)) {
-            const nullIndex = targetRoom.players.indexOf(null);
-            targetRoom.players.splice(nullIndex, 1, value)
-        }
-        targetRoom.players = [...targetRoom.players, value];
-    }
-
-    if (command === 'deckRefresh') {
-        targetRoom.deck = shuffleArray(deckInit.map(card => card));
-        targetRoom.discardPile = '';
-    }
-
 }
 
 function getGameState(roomId) {
     const roomIndex = unoRooms.findIndex(room => room.roomCode === roomId);
     const unoRoom = unoRooms.slice(roomIndex, roomIndex + 1)[0];
-    // snapshot of room that excluded hidden info
+    // snapshot of room that excludes hidden info
     const gameUpdateObj = {
         gameStarted: unoRoom.gameStarted,
         maxPlayers: unoRoom.maxPlayers,
@@ -133,6 +95,45 @@ function shuffleArray(array) {
     return array;
 }
 
+function setGameState(roomId, action, value) {
+    const targetRoom = unoRooms.find(room => room.roomCode === roomId);
+    action(targetRoom, value);
+}
+
+const drawCard = (targetRoom, value) => {
+    const userIndex = targetRoom.players.indexOf(value);
+    const drawnCard = targetRoom.deck.pop();
+    targetRoom.playerHands[userIndex].push(drawnCard);
+}
+
+const startGame = (targetRoom) => {
+    targetRoom.gameStarted = true;
+    const gamePlayersCount = targetRoom.players.length;
+    for (let i = 0; i < 7; i++) {
+        for (let j = 0; j < gamePlayersCount; j++) {
+            drawCard(targetRoom, targetRoom.players[j])
+        }
+    }
+    const cardToDiscard = targetRoom.deck.pop();
+    targetRoom.discardPile = cardToDiscard;
+}
+
+const setMaxPlayers = (targetRoom, value) => {
+    targetRoom.maxPlayers = value;
+}
+
+const addPlayer = (targetRoom, value) => {
+    if (targetRoom.players.includes(null)) {
+        const nullIndex = targetRoom.players.indexOf(null);
+        targetRoom.players.splice(nullIndex, 1, value)
+    }
+    targetRoom.players = [...targetRoom.players, value];
+}
+
+const deckRefresh = (targetRoom) => {
+    targetRoom.deck = shuffleArray(deckInit.map(card => card));
+    targetRoom.discardPile = '';
+}
 
 module.exports = {
     roomJoinUno,
@@ -141,5 +142,10 @@ module.exports = {
     checkEmptyRoom,
     getGameState,
     setGameState,
-    getPlayerHand
+    getPlayerHand,
+    startGame,
+    drawCard,
+    setMaxPlayers,
+    addPlayer,
+    deckRefresh
 }
