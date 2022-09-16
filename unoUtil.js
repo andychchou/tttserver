@@ -23,7 +23,7 @@ function roomJoinUno(userObj) {
             players: [userObj.user],
             playerHands: [[], []],
             host: userObj,
-            discardPile: '',
+            discardPile: [],
             turn: 0,
             playDirection: true
         }
@@ -115,7 +115,7 @@ const startGame = (targetRoom) => {
         }
     }
     const cardToDiscard = targetRoom.deck.pop();
-    targetRoom.discardPile = cardToDiscard;
+    targetRoom.discardPile.push(cardToDiscard);
 }
 
 const setMaxPlayers = (targetRoom, value) => {
@@ -132,7 +132,7 @@ const addPlayer = (targetRoom, value) => {
 
 const deckRefresh = (targetRoom) => {
     targetRoom.deck = shuffleArray(deckInit.map(card => card));
-    targetRoom.discardPile = '';
+    targetRoom.discardPile = [];
 }
 
 module.exports = {
