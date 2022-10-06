@@ -1,6 +1,6 @@
 const { set } = require('mongoose');
 const { userJoin, getCurrentUser, userLeave, getRoomUsers } = require('./socketUsersUtil');
-const { roomJoinUno, roomLeaveUno, checkEmptyRoom, getGameState, setGameState, getPlayerHand, startGame, drawCard, setMaxPlayers, addPlayer, deckRefresh } = require('./unoUtil')
+const { roomJoinUno, roomLeaveUno, checkEmptyRoom, getGameState, setGameState, getPlayerHand, startGame, setStartingDeck, drawCard, setMaxPlayers, addPlayer, deckRefresh } = require('./unoUtil')
 
 module.exports = (io, socket) => {
     console.log('socketServer connected');
@@ -98,6 +98,7 @@ module.exports = (io, socket) => {
         const userObj = getCurrentUser(socket.id)
         const gamePlayersCount = getGameState(room).players.length;
         if (gamePlayersCount > 1) {
+            setGameState(room, setStartingDeck);
             setGameState(room, deckRefresh);
             setGameState(room, startGame);
             const gameState = getGameState(room);

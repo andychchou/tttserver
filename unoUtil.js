@@ -18,14 +18,16 @@ function roomJoinUno(userObj) {
         const roomToAdd = {
             roomCode: userObj.room,
             gameStarted: false,
-            deck: deckInit,
+            deck: [],
             maxPlayers: 0,
             players: [userObj.user],
             playerHands: [[], []],
             host: userObj,
             discardPile: [],
             turn: 0,
-            playDirection: true
+            playDirection: true,
+            currentNumber: '',
+            currentColor: ''
         }
         unoRooms.push(roomToAdd);
     } else {
@@ -71,7 +73,9 @@ function getGameState(roomId) {
         host: unoRoom.host,
         discardPile: unoRoom.discardPile,
         turn: unoRoom.turn,
-        playDirection: unoRoom.playDirection
+        playDirection: unoRoom.playDirection,
+        currentNumber: unoRoom.currentNumber,
+        currentColor: unoRoom.currentColor
     }
     return gameUpdateObj;
 }
@@ -106,16 +110,8 @@ const drawCard = (targetRoom, value) => {
     targetRoom.playerHands[userIndex].push(drawnCard);
 }
 
-const startGame = (targetRoom) => {
-    targetRoom.gameStarted = true;
-    const gamePlayersCount = targetRoom.players.length;
-    for (let i = 0; i < 7; i++) {
-        for (let j = 0; j < gamePlayersCount; j++) {
-            drawCard(targetRoom, targetRoom.players[j])
-        }
-    }
-    const cardToDiscard = targetRoom.deck.pop();
-    targetRoom.discardPile.push(cardToDiscard);
+const setStartingDeck = (targetRoom) => {
+    targetRoom.deck = deckInit.map(card => card);
 }
 
 const setMaxPlayers = (targetRoom, value) => {
@@ -131,8 +127,34 @@ const addPlayer = (targetRoom, value) => {
 }
 
 const deckRefresh = (targetRoom) => {
-    targetRoom.deck = shuffleArray(deckInit.map(card => card));
+    targetRoom.deck = shuffleArray([...targetRoom.deck, ...targetRoom.discardPile]);
     targetRoom.discardPile = [];
+}
+
+const startGame = (targetRoom) => {
+    targetRoom.gameStarted = true;
+    targetRoom.deck = deckInit.map(card => card);
+    deckRefresh(targetRoom);
+
+    const gamePlayersCount = targetRoom.players.length;
+    for (let i = 0; i < 7; i++) {
+        for (let j = 0; j < gamePlayersCount; j++) {
+            drawCard(targetRoom, targetRoom.players[j])
+        }
+    }
+
+    const flipStartingCard = (targetRoom) => {
+        const cardToDiscard = targetRoom.deck.pop();
+        targetRoom.discardPile.push(cardToDiscard);
+    }
+
+    flipStartingCard(targetRoom);
+
+    // TODO
+    if (targetRoom.discardPile[0] === 'D4W') {
+        deckRefresh(targetRoom);
+        flipStartingCard(targetRoom);
+    }
 }
 
 module.exports = {
@@ -144,6 +166,7 @@ module.exports = {
     setGameState,
     getPlayerHand,
     startGame,
+    setStartingDeck,
     drawCard,
     setMaxPlayers,
     addPlayer,
