@@ -110,10 +110,6 @@ const drawCard = (targetRoom, value) => {
     targetRoom.playerHands[userIndex].push(drawnCard);
 }
 
-const setStartingDeck = (targetRoom) => {
-    targetRoom.deck = deckInit.map(card => card);
-}
-
 const setMaxPlayers = (targetRoom, value) => {
     targetRoom.maxPlayers = value;
 }
@@ -146,15 +142,17 @@ const startGame = (targetRoom) => {
     const flipStartingCard = (targetRoom) => {
         const cardToDiscard = targetRoom.deck.pop();
         targetRoom.discardPile.push(cardToDiscard);
+        if (targetRoom.discardPile[0] === 'D4W') {
+            deckRefresh(targetRoom);
+            flipStartingCard(targetRoom);
+        }
     }
 
     flipStartingCard(targetRoom);
 
-    // TODO
-    if (targetRoom.discardPile[0] === 'D4W') {
-        deckRefresh(targetRoom);
-        flipStartingCard(targetRoom);
-    }
+    const startingCard = targetRoom.discardPile[0];
+    targetRoom.currentNumber = startingCard.charAt(0);
+    targetRoom.currentColor = startingCard.charAt(startingCard.length - 1)
 }
 
 module.exports = {
@@ -166,7 +164,6 @@ module.exports = {
     setGameState,
     getPlayerHand,
     startGame,
-    setStartingDeck,
     drawCard,
     setMaxPlayers,
     addPlayer,
