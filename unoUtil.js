@@ -18,6 +18,7 @@ function roomJoinUno(userObj) {
         const roomToAdd = {
             roomCode: userObj.room,
             gameStarted: false,
+            gamePaused: false,
             deck: [],
             maxPlayers: 0,
             players: [userObj.user],
@@ -27,7 +28,9 @@ function roomJoinUno(userObj) {
             turn: 0,
             playDirection: true,
             currentNumber: '',
-            currentColor: ''
+            currentColor: '',
+            draw4check: false,
+            draw4illegal: false
         }
         unoRooms.push(roomToAdd);
     } else {
@@ -67,6 +70,7 @@ function getGameState(roomId) {
     // snapshot of room that excludes hidden info
     const gameUpdateObj = {
         gameStarted: unoRoom.gameStarted,
+        gamePaused: unoRoom.gamePaused,
         maxPlayers: unoRoom.maxPlayers,
         players: unoRoom.players,
         playerHandsCounts: unoRoom.playerHands.map((playerHand) => playerHand.length),
@@ -75,7 +79,8 @@ function getGameState(roomId) {
         turn: unoRoom.turn,
         playDirection: unoRoom.playDirection,
         currentNumber: unoRoom.currentNumber,
-        currentColor: unoRoom.currentColor
+        currentColor: unoRoom.currentColor,
+        draw4check: unoRoom.draw4check
     }
     return gameUpdateObj;
 }
@@ -104,10 +109,9 @@ function setGameState(roomId, action, value) {
     action(targetRoom, value);
 }
 
-const drawCard = (targetRoom, value) => {
-    const userIndex = targetRoom.players.indexOf(value);
+const drawCard = (targetRoom, playerIndex) => {
     const drawnCard = targetRoom.deck.pop();
-    targetRoom.playerHands[userIndex].push(drawnCard);
+    targetRoom.playerHands[playerIndex].push(drawnCard);
 }
 
 const setMaxPlayers = (targetRoom, value) => {
@@ -127,6 +131,14 @@ const deckRefresh = (targetRoom) => {
     targetRoom.discardPile = [];
 }
 
+const gamePause = (targetRoom, boolean) => {
+    targetRoom.gamePaused = boolean;
+}
+
+const setDraw4check = (targetRoom, boolean) => {
+    targetRoom.draw4check = boolean;
+}
+
 const startGame = (targetRoom) => {
     targetRoom.gameStarted = true;
     targetRoom.deck = deckInit.map(card => card);
@@ -135,14 +147,15 @@ const startGame = (targetRoom) => {
     const gamePlayersCount = targetRoom.players.length;
     for (let i = 0; i < 7; i++) {
         for (let j = 0; j < gamePlayersCount; j++) {
-            drawCard(targetRoom, targetRoom.players[j])
+            drawCard(targetRoom, j);
         }
     }
 
     const flipStartingCard = (targetRoom) => {
         const cardToDiscard = targetRoom.deck.pop();
         targetRoom.discardPile.push(cardToDiscard);
-        if (targetRoom.discardPile[0] === 'D4W') {
+        if (targetRoom.discardPile[0] === 'D4W' ||
+            targetRoom.discardPile[0] === 'W') {
             deckRefresh(targetRoom);
             flipStartingCard(targetRoom);
         }
@@ -153,6 +166,164 @@ const startGame = (targetRoom) => {
     const startingCard = targetRoom.discardPile[0];
     targetRoom.currentNumber = startingCard.charAt(0);
     targetRoom.currentColor = startingCard.charAt(startingCard.length - 1)
+    //TODO: start game cases
+}
+
+const setCurrentColor = (targetRoom, color) => {
+    targetRoom.currentColor = color;
+}
+
+const nextPlayer = (targetRoom) => {
+    if (targetRoom.playDirection) {
+        if (targetRoom.turn === (targetRoom.maxPlayers - 1)) {
+            targetRoom.turn = 0;
+        } else {
+            targetRoom.turn++;
+        }
+    } else {
+        if (targetRoom.turn === 0) {
+            targetRoom.turn = targetRoom.maxPlayers - 1;
+        } else {
+            targetRoom.turn--;
+        }
+    }
+}
+
+const draw4 = (targetRoom) => {
+    drawCard(targetRoom, targetRoom.turn);
+    drawCard(targetRoom, targetRoom.turn);
+    drawCard(targetRoom, targetRoom.turn);
+    drawCard(targetRoom, targetRoom.turn);
+    targetRoom.draw4illegal = false;
+    nextPlayer(targetRoom);
+}
+
+const getPreviousPlayerIndex = (targetRoom) => {
+    const previousPlayerIndex = -1;
+    if (targetRoom.playDirection) {
+        if (targetRoom.turn = 0) {
+            previousPlayerIndex = targetRoom.maxPlayers - 1;
+        } else {
+            previousPlayerIndex = targetRoom.turn - 1;
+        }
+    } else {
+        if (targetRoom.turn === (targetRoom.maxPlayers - 1)) {
+            previousPlayerIndex = 0;
+        } else {
+            previousPlayerIndex = targetRoom.turn + 1;
+        }
+    }
+
+    return previousPlayerIndex;
+}
+
+const getPreviousPlayerHand = (roomId) => {
+    const targetRoom = unoRooms.find(room => room.roomCode === roomId);
+    const previousPlayerIndex = getPreviousPlayerIndex(targetRoom);
+    return targetRoom.playerHands[previousPlayerIndex];
+}
+
+const checkChallenge = (roomId) => {
+    const targetRoom = unoRooms.find(room => room.roomCode === roomId);
+    if (targetRoom.draw4illegal === true) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+const checkChallengePass = (roomId) => {
+    const targetRoom = unoRooms.find(room => room.roomCode === roomId);
+    const previousPlayerIndex = getPreviousPlayerIndex(targetRoom);
+    drawCard(targetRoom, previousPlayerIndex);
+    drawCard(targetRoom, previousPlayerIndex);
+    drawCard(targetRoom, previousPlayerIndex);
+    drawCard(targetRoom, previousPlayerIndex);
+    targetRoom.draw4illegal = false;
+    setDraw4check(targetRoom, false);
+}
+
+const checkChallengeFail = (roomId) => {
+    const targetRoom = unoRooms.find(room => room.roomCode === roomId);
+    drawCard(targetRoom, targetRoom.turn);
+    drawCard(targetRoom, targetRoom.turn);
+    draw4(targetRoom);
+    setDraw4check(targetRoom, false);
+}
+
+const cardPlayedAction = (roomId, user, cardIndex) => {
+    const targetRoom = unoRooms.find(room => room.roomCode === roomId)
+
+    const playerIndex = targetRoom.players.indexOf(user);
+    console.log("playerIndex: " + playerIndex);
+    const playerHand = targetRoom.playerHands[playerIndex];
+    console.log("playerHand: " + playerHand);
+
+    const cardPlayed = playerHand[cardIndex];
+    playerHand.splice(cardIndex, 1);
+
+    targetRoom.discardPile.push(cardPlayed);
+
+    if (cardPlayed.charAt(0) === 'D') {
+        if (cardPlayed.charAt(1) === '2') {
+            // draw 2
+            targetRoom.currentNumber = 'n';
+            targetRoom.currentColor = cardPlayed.charAt(2);
+            nextPlayer(targetRoom);
+            drawCard(targetRoom, targetRoom.turn);
+            drawCard(targetRoom, targetRoom.turn);
+            nextPlayer(targetRoom);
+        } else {
+            // draw 4 wild
+            const isPlayable = (card) => {
+                if (card.charAt(0) === targetRoom.currentNumber) return true;
+                if (card.charAt(1) === targetRoom.currentColor) return true;
+                if (card === 'W') return true;
+                if (card.charAt(0) === 's') {
+                    if (card.charAt(4) === targetRoom.currentColor) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            const playableCards = playerHand.filter(card => isPlayable(card));
+
+            if (playableCards.length > 0) {
+                targetRoom.draw4illegal = true;
+            }
+
+            nextPlayer(targetRoom);
+            setDraw4check(targetRoom, true);
+            return true;
+        }
+    }
+
+    if (cardPlayed.charAt(0) === 'W') {
+        targetRoom.currentNumber = 'n';
+        nextPlayer(targetRoom);
+        return true;
+    }
+
+    if (cardPlayed.charAt(0) === 's') {
+        targetRoom.currentNumber = 'n';
+        targetRoom.currentColor = cardPlayed.charAt(4);
+        nextPlayer(targetRoom);
+        nextPlayer(targetRoom);
+        return false;
+    }
+
+    if (cardPlayed.charAt(0) === '_') {
+        targetRoom.currentNumber = 'n';
+        targetRoom.playDirection = !(targetRoom.playDirection);
+        nextPlayer(targetRoom);
+        return false;
+    }
+
+    targetRoom.currentNumber = cardPlayed.charAt(0);
+    targetRoom.currentColor = cardPlayed.charAt(1);
+    nextPlayer(targetRoom);
+
+    return false;
 }
 
 module.exports = {
@@ -167,5 +338,13 @@ module.exports = {
     drawCard,
     setMaxPlayers,
     addPlayer,
-    deckRefresh
+    deckRefresh,
+    gamePause,
+    setCurrentColor,
+    draw4,
+    getPreviousPlayerHand,
+    checkChallenge,
+    checkChallengePass,
+    checkChallengeFail,
+    cardPlayedAction,
 }
