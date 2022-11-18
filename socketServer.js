@@ -1,6 +1,6 @@
 const { set } = require('mongoose');
 const { userJoin, getCurrentUser, userLeave, getRoomUsers } = require('./socketUsersUtil');
-const { roomJoinUno, roomLeaveUno, checkEmptyRoom, getGameState, setGameState, getPlayerHand, startGame, drawCard, setMaxPlayers, addPlayer, deckRefresh, gamePause, setCurrentColor, draw4, getPreviousPlayerHand, checkChallenge, checkChallengePass, checkChallengeFail, cardPlayedAction } = require('./unoUtil')
+const { roomJoinUno, roomLeaveUno, checkEmptyRoom, getGameState, setGameState, getPlayerHand, startGame, drawCard, setMaxPlayers, addPlayer, deckRefresh, gamePause, setCurrentColor, nextPlayer, draw4, getPreviousPlayerHand, checkChallenge, checkChallengePass, checkChallengeFail, drawClickedPlayable, cardPlayedAction } = require('./unoUtil')
 
 module.exports = (io, socket) => {
     console.log('socketServer connected');
@@ -129,6 +129,38 @@ module.exports = (io, socket) => {
         io.to(userObj.room).emit('updateGameState', { gameState });
     });
 
+    socket.on('drawClicked', () => {
+        const userObj = getCurrentUser(socket.id);
+        if (drawClickedPlayable(userObj.room)) {
+            socket.emit('drawnCardPlayable');
+        } else {
+            setGameState(userObj.room, nextPlayer)
+            setGameState(userObj.room, gamePause, false)
+        }
+        const gameState = getGameState(userObj.room);
+        io.to(userObj.room).emit('updateGameState', { gameState });
+    });
+
+    socket.on('play', ({ cardIndex }) => {
+        const userObj = getCurrentUser(socket.id);
+        setGameState(userObj.room, gamePause, false);
+        const requestColor = cardPlayedAction(userObj.room, userObj.user, cardIndex);
+        if (requestColor) {
+            setGameState(userObj.room, gamePause, true);
+            socket.emit('requestColor');
+        }
+        const gameState = getGameState(userObj.room);
+        io.to(userObj.room).emit('updateGameState', { gameState });
+    });
+
+    socket.on('pass', () => {
+        const userObj = getCurrentUser(socket.id);
+        setGameState(userObj.room, nextPlayer);
+        setGameState(userObj.room, gamePause, false);
+        const gameState = getGameState(userObj.room);
+        io.to(userObj.room).emit('updateGameState', { gameState });
+    });
+
     socket.on('colorSelected', ({ colorSelected }) => {
         const userObj = getCurrentUser(socket.id);
         setGameState(userObj.room, setCurrentColor, colorSelected);
@@ -140,6 +172,9 @@ module.exports = (io, socket) => {
     socket.on('draw4', () => {
         const userObj = getCurrentUser(socket.id);
         setGameState(userObj.room, draw4);
+
+        const gameState = getGameState(userObj.room);
+        io.to(userObj.room).emit('updateGameState', { gameState });
     });
 
     socket.on('draw4challenged', () => {

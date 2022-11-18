@@ -104,6 +104,18 @@ function shuffleArray(array) {
     return array;
 }
 
+function isPlayable(card, targetRoom) {
+    if (card.charAt(0) === targetRoom.currentNumber) return true;
+    if (card.charAt(card.length - 1) === targetRoom.currentColor) return true;
+    if (card === 'W') return true;
+    if (card.charAt(0) === 's') {
+        if (card.charAt(4) === targetRoom.currentColor) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function setGameState(roomId, action, value) {
     const targetRoom = unoRooms.find(room => room.roomCode === roomId);
     action(targetRoom, value);
@@ -199,7 +211,7 @@ const draw4 = (targetRoom) => {
 }
 
 const getPreviousPlayerIndex = (targetRoom) => {
-    const previousPlayerIndex = -1;
+    let previousPlayerIndex = -1;
     if (targetRoom.playDirection) {
         if (targetRoom.turn = 0) {
             previousPlayerIndex = targetRoom.maxPlayers - 1;
@@ -251,6 +263,19 @@ const checkChallengeFail = (roomId) => {
     setDraw4check(targetRoom, false);
 }
 
+const drawClickedPlayable = (roomId) => {
+    const targetRoom = unoRooms.find(room => room.roomCode === roomId);
+    drawCard(targetRoom, targetRoom.turn);
+    gamePause(targetRoom, true);
+    const currentPlayerHand = targetRoom.playerHands[targetRoom.turn];
+    const drawnCard = currentPlayerHand[currentPlayerHand.length - 1];
+    if (isPlayable(drawnCard, targetRoom)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 const cardPlayedAction = (roomId, user, cardIndex) => {
     const targetRoom = unoRooms.find(room => room.roomCode === roomId)
 
@@ -275,18 +300,7 @@ const cardPlayedAction = (roomId, user, cardIndex) => {
             nextPlayer(targetRoom);
         } else {
             // draw 4 wild
-            const isPlayable = (card) => {
-                if (card.charAt(0) === targetRoom.currentNumber) return true;
-                if (card.charAt(1) === targetRoom.currentColor) return true;
-                if (card === 'W') return true;
-                if (card.charAt(0) === 's') {
-                    if (card.charAt(4) === targetRoom.currentColor) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            const playableCards = playerHand.filter(card => isPlayable(card));
+            const playableCards = playerHand.filter(card => isPlayable(card, targetRoom));
 
             if (playableCards.length > 0) {
                 targetRoom.draw4illegal = true;
@@ -313,7 +327,7 @@ const cardPlayedAction = (roomId, user, cardIndex) => {
     }
 
     if (cardPlayed.charAt(0) === '_') {
-        targetRoom.currentNumber = 'n';
+        targetRoom.currentNumber = '_';
         targetRoom.playDirection = !(targetRoom.playDirection);
         nextPlayer(targetRoom);
         return false;
@@ -341,10 +355,12 @@ module.exports = {
     deckRefresh,
     gamePause,
     setCurrentColor,
+    nextPlayer,
     draw4,
     getPreviousPlayerHand,
     checkChallenge,
     checkChallengePass,
     checkChallengeFail,
+    drawClickedPlayable,
     cardPlayedAction,
 }
