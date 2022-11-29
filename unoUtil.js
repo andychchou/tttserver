@@ -144,6 +144,7 @@ const deckRefresh = (targetRoom) => {
 }
 
 const gamePause = (targetRoom, boolean) => {
+    console.log("gamePause set to: " + boolean);
     targetRoom.gamePaused = boolean;
 }
 
@@ -207,6 +208,7 @@ const draw4 = (targetRoom) => {
     drawCard(targetRoom, targetRoom.turn);
     drawCard(targetRoom, targetRoom.turn);
     targetRoom.draw4illegal = false;
+    setDraw4check(targetRoom, false);
     nextPlayer(targetRoom);
 }
 
@@ -260,25 +262,26 @@ const checkChallengeFail = (roomId) => {
     drawCard(targetRoom, targetRoom.turn);
     drawCard(targetRoom, targetRoom.turn);
     draw4(targetRoom);
+    targetRoom.draw4illegal = false;
     setDraw4check(targetRoom, false);
 }
 
-const drawClickedPlayable = (roomId) => {
+const drawClicked = (roomId) => {
     const targetRoom = unoRooms.find(room => room.roomCode === roomId);
     drawCard(targetRoom, targetRoom.turn);
     gamePause(targetRoom, true);
-    const currentPlayerHand = targetRoom.playerHands[targetRoom.turn];
-    const drawnCard = currentPlayerHand[currentPlayerHand.length - 1];
-    if (isPlayable(drawnCard, targetRoom)) {
-        return true;
-    } else {
-        return false;
-    }
+    // const currentPlayerHand = targetRoom.playerHands[targetRoom.turn];
+    // const drawnCard = currentPlayerHand[currentPlayerHand.length - 1];
+    // if (isPlayable(drawnCard, targetRoom)) {
+    //     return true;
+    // } else {
+    //     return false;
+    // }
 }
 
 const cardPlayedAction = (roomId, user, cardIndex) => {
     const targetRoom = unoRooms.find(room => room.roomCode === roomId)
-
+    targetRoom.gamePaused = false;
     const playerIndex = targetRoom.players.indexOf(user);
     console.log("playerIndex: " + playerIndex);
     const playerHand = targetRoom.playerHands[playerIndex];
@@ -292,6 +295,7 @@ const cardPlayedAction = (roomId, user, cardIndex) => {
     if (cardPlayed.charAt(0) === 'D') {
         if (cardPlayed.charAt(1) === '2') {
             // draw 2
+            console.log('draw 2 played');
             targetRoom.currentNumber = 'n';
             targetRoom.currentColor = cardPlayed.charAt(2);
             nextPlayer(targetRoom);
@@ -300,6 +304,7 @@ const cardPlayedAction = (roomId, user, cardIndex) => {
             nextPlayer(targetRoom);
         } else {
             // draw 4 wild
+            console.log('draw 4 played');
             const playableCards = playerHand.filter(card => isPlayable(card, targetRoom));
 
             if (playableCards.length > 0) {
@@ -310,34 +315,34 @@ const cardPlayedAction = (roomId, user, cardIndex) => {
             setDraw4check(targetRoom, true);
             return true;
         }
-    }
-
-    if (cardPlayed.charAt(0) === 'W') {
+    } else if (cardPlayed.charAt(0) === 'W') {
+        console.log('wild played');
         targetRoom.currentNumber = 'n';
         nextPlayer(targetRoom);
         return true;
-    }
-
-    if (cardPlayed.charAt(0) === 's') {
-        targetRoom.currentNumber = 'n';
+    } else if (cardPlayed.charAt(0) === 's') {
+        console.log('skip played');
+        targetRoom.currentNumber = 's';
         targetRoom.currentColor = cardPlayed.charAt(4);
         nextPlayer(targetRoom);
         nextPlayer(targetRoom);
         return false;
-    }
-
-    if (cardPlayed.charAt(0) === '_') {
+    } else if (cardPlayed.charAt(0) === '_') {
+        console.log('reverse played');
         targetRoom.currentNumber = '_';
+        targetRoom.currentColor = cardPlayed.charAt(1);
         targetRoom.playDirection = !(targetRoom.playDirection);
         nextPlayer(targetRoom);
         return false;
+    } else {
+        console.log('normal card played');
+        targetRoom.currentNumber = cardPlayed.charAt(0);
+        targetRoom.currentColor = cardPlayed.charAt(1);
+        nextPlayer(targetRoom);
+
+        return false;
     }
 
-    targetRoom.currentNumber = cardPlayed.charAt(0);
-    targetRoom.currentColor = cardPlayed.charAt(1);
-    nextPlayer(targetRoom);
-
-    return false;
 }
 
 module.exports = {
@@ -361,6 +366,6 @@ module.exports = {
     checkChallenge,
     checkChallengePass,
     checkChallengeFail,
-    drawClickedPlayable,
+    drawClicked,
     cardPlayedAction,
 }
