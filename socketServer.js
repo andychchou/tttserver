@@ -1,6 +1,6 @@
 const { set } = require('mongoose');
 const { userJoin, getCurrentUser, userLeave, getRoomUsers } = require('./socketUsersUtil');
-const { roomJoinUno, roomLeaveUno, checkEmptyRoom, getGameState, setGameState, getPlayerHand, startGame, drawCard, setMaxPlayers, addPlayer, deckRefresh, gamePause, setCurrentColor, nextPlayer, draw4, getPreviousPlayerHand, checkChallenge, checkChallengePass, checkChallengeFail, drawClicked, cardPlayedAction } = require('./unoUtil')
+const { roomJoinUno, roomLeaveUno, checkEmptyRoom, getGameState, setGameState, getPlayerHand, startGame, restartGame, drawCard, setMaxPlayers, addPlayer, deckRefresh, gamePause, setCurrentColor, nextPlayer, draw4, getPreviousPlayerHand, checkChallenge, checkChallengePass, checkChallengeFail, drawClicked, cardPlayedAction } = require('./unoUtil')
 
 module.exports = (io, socket) => {
     console.log('socketServer connected');
@@ -108,6 +108,20 @@ module.exports = (io, socket) => {
         }
     });
 
+    socket.on('restartGame', ({ room }) => {
+        console.log("game restarted");
+        setGameState(room, restartGame);
+        const gamePlayersCount = getGameState(room).players.length;
+        if (gamePlayersCount > 1) {
+            setGameState(room, startGame);
+            const gameState = getGameState(room);
+            console.log("game started.")
+            console.log(gameState)
+            io.to(room).emit('updateGameState', { gameState });
+            io.to(room).emit('receive-message', { text: 'Game restarted.', sender: 'Game' });
+        }
+    })
+
     socket.on('requestHandState', () => {
         const userObj = getCurrentUser(socket.id);
         const gameState = getGameState(userObj.room);
@@ -141,6 +155,7 @@ module.exports = (io, socket) => {
         //     setGameState(userObj.room, nextPlayer)
         //     setGameState(userObj.room, gamePause, false)
         // }
+
         gameState = getGameState(userObj.room);
         io.to(userObj.room).emit('updateGameState', { gameState });
     });
@@ -168,7 +183,6 @@ module.exports = (io, socket) => {
     socket.on('colorSelected', ({ colorSelected }) => {
         const userObj = getCurrentUser(socket.id);
         setGameState(userObj.room, setCurrentColor, colorSelected);
-        setGameState(userObj.room, gamePause, false);
         const gameState = getGameState(userObj.room);
         io.to(userObj.room).emit('updateGameState', { gameState });
     });
@@ -182,6 +196,7 @@ module.exports = (io, socket) => {
     });
 
     socket.on('draw4challenged', () => {
+        console.log('draw4challenged');
         const userObj = getCurrentUser(socket.id);
         const previousPlayerHand = getPreviousPlayerHand(userObj.room);
         const handMessage = "Challenged hand: " + previousPlayerHand;
@@ -197,4 +212,11 @@ module.exports = (io, socket) => {
         const gameState = getGameState(userObj.room);
         io.to(userObj.room).emit('updateGameState', { gameState });
     });
+
+    socket.on('debugGameState', () => {
+        const userObj = getCurrentUser(socket.id);
+        const gameState = getGameState(userObj.room);
+        console.log('Game State Debug: ');
+        console.log(JSON.stringify(gameState))
+    })
 };

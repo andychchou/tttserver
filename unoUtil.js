@@ -105,14 +105,10 @@ function shuffleArray(array) {
 }
 
 function isPlayable(card, targetRoom) {
+    if (card === 'D4W') return false;
     if (card.charAt(0) === targetRoom.currentNumber) return true;
     if (card.charAt(card.length - 1) === targetRoom.currentColor) return true;
     if (card === 'W') return true;
-    if (card.charAt(0) === 's') {
-        if (card.charAt(4) === targetRoom.currentColor) {
-            return true;
-        }
-    }
     return false;
 }
 
@@ -121,9 +117,18 @@ function setGameState(roomId, action, value) {
     action(targetRoom, value);
 }
 
+const refreshCheck = (targetRoom) => {
+    if (targetRoom.deck.length === 0) {
+        const lastCard = targetRoom.discardPile.pop();
+        deckRefresh(targetRoom);
+        targetRoom.discardPile.push(lastCard);
+    }
+}
+
 const drawCard = (targetRoom, playerIndex) => {
     const drawnCard = targetRoom.deck.pop();
     targetRoom.playerHands[playerIndex].push(drawnCard);
+    refreshCheck(targetRoom);
 }
 
 const setMaxPlayers = (targetRoom, value) => {
@@ -182,8 +187,24 @@ const startGame = (targetRoom) => {
     //TODO: start game cases
 }
 
+const restartGame = (targetRoom) => {
+    targetRoom.gameStarted = false;
+    targetRoom.gamePaused = false;
+    targetRoom.playerHands = [[], []];
+    targetRoom.discardPile = [];
+    targetRoom.turn = 0;
+    targetRoom.playDirection = true;
+    targetRoom.currentNumber = '';
+    targetRoom.currentColor = '';
+    targetRoom.draw4check = false;
+    targetRoom.draw4illegal = false;
+}
+
 const setCurrentColor = (targetRoom, color) => {
     targetRoom.currentColor = color;
+    if (targetRoom.draw4check === false) {
+        targetRoom.gamePaused = false;
+    }
 }
 
 const nextPlayer = (targetRoom) => {
@@ -208,7 +229,8 @@ const draw4 = (targetRoom) => {
     drawCard(targetRoom, targetRoom.turn);
     drawCard(targetRoom, targetRoom.turn);
     targetRoom.draw4illegal = false;
-    setDraw4check(targetRoom, false);
+    targetRoom.gamePaused = false;
+    targetRoom.draw4check = false;
     nextPlayer(targetRoom);
 }
 
@@ -277,6 +299,7 @@ const drawClicked = (roomId) => {
     // } else {
     //     return false;
     // }
+    refreshCheck(targetRoom);
 }
 
 const cardPlayedAction = (roomId, user, cardIndex) => {
@@ -292,11 +315,12 @@ const cardPlayedAction = (roomId, user, cardIndex) => {
 
     targetRoom.discardPile.push(cardPlayed);
 
+    // returns boolean for color request
     if (cardPlayed.charAt(0) === 'D') {
         if (cardPlayed.charAt(1) === '2') {
             // draw 2
             console.log('draw 2 played');
-            targetRoom.currentNumber = 'n';
+            targetRoom.currentNumber = 'D';
             targetRoom.currentColor = cardPlayed.charAt(2);
             nextPlayer(targetRoom);
             drawCard(targetRoom, targetRoom.turn);
@@ -305,6 +329,10 @@ const cardPlayedAction = (roomId, user, cardIndex) => {
         } else {
             // draw 4 wild
             console.log('draw 4 played');
+
+            targetRoom.currentNumber = 'n';
+            targetRoom.currentColor = 'n';
+
             const playableCards = playerHand.filter(card => isPlayable(card, targetRoom));
 
             if (playableCards.length > 0) {
@@ -354,6 +382,7 @@ module.exports = {
     setGameState,
     getPlayerHand,
     startGame,
+    restartGame,
     drawCard,
     setMaxPlayers,
     addPlayer,
